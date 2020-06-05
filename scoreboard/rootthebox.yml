@@ -1,0 +1,97 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: rootthebox-ingress
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/frontend-entry-points: "http,https"
+spec:
+  tls:
+  - hosts:
+    - juiceshop-scoreboard.lskysd.ca
+  rules:
+  - host: juiceshop-scoreboard.lskysd.ca
+    http:
+      paths:
+      - backend:
+          serviceName: rootthebox
+          servicePort: 80
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rootthebox-config
+  labels:
+    app: rootthebox
+data:
+  listen_port: "8888"
+  listen_interface: 0.0.0.0
+  x_headers: "True"
+  ssl: "False"
+  memcached: localhost
+  game_name: "LSSD CTF Scoreboard"
+  ctf_tagline: ""
+  public_teams: "True"
+  require_email: "True"
+  restrict_registration: "False"
+  show_mvp: "True"
+  mvp_max: "3"
+  show_captured_flag: "True"
+  global_notification: "True"
+  teams: "True"
+  max_team_size: "6"
+  team_sharing: "False"
+  use_bots: "False"
+  use_black_market: "False"
+  story_mode: "False"
+  teams: "True"
+  default_theme: "Simplex"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rootthebox
+  labels:
+    app: rootthebox
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  selector:
+    matchLabels:
+      app: rootthebox
+  template:
+    metadata:
+      labels:
+        app: rootthebox
+    spec:
+      containers:
+        - name: frontend
+          image: docker-registry.lskysd.ca/ctf/rootthebox:latest
+          ports:
+            - containerPort: 8888
+          envFrom:
+            - configMapRef:
+                name: rootthebox-config
+        - name: memcached
+          image: memcached:latest
+          ports:
+            - containerPort: 11211
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rootthebox
+  labels:
+    app: rootthebox
+spec:
+  selector:
+    app: rootthebox
+  ports:
+   - name: http
+     port: 80
+     targetPort: 8888
+     protocol: TCP
