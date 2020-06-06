@@ -1,0 +1,97 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ctfd-ingress
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/frontend-entry-points: "http,https"
+spec:
+  tls:
+  - hosts:
+    - juiceshop-scoreboard.lskysd.ca
+  rules:
+  - host: juiceshop-scoreboard.lskysd.ca
+    http:
+      paths:
+      - backend:
+          serviceName: ctfd
+          servicePort: 80
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ctfd-config
+  labels:
+    app: ctfd
+data:
+  placeholder: "Yes"
+  UPLOAD_FOLDER: /var/uploads
+  DATABASE_URL: mysql+pymysql://root:ctfd@127.0.0.1:3306/ctfd
+  REDIS_URL: redis://127.0.0.1:6379
+  WORKERS: "1"
+  LOG_FOLDER: /var/log/CTFd
+  REVERSE_PROXY: "True"
+  MYSQL_ROOT_PASSWORD: ctfd
+  MYSQL_USER: ctfd
+  MYSQL_PASSWORD: ctfd
+  MYSQL_DATABASE: ctfd
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctfd
+  labels:
+    app: ctfd
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  selector:
+    matchLabels:
+      app: ctfd
+  template:
+    metadata:
+      labels:
+        app: ctfd
+    spec:
+      containers:
+        - name: ctfd
+          image: ctfd:latest
+          imagePullPolicy: Never # get the one built on the kubernetes server itself
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: ctfd-config
+        - name: db
+          image: mariadb:10.4.12
+          ports:
+            - containerPort: 3306
+          envFrom:
+            - configMapRef:
+                name: ctfd-config
+        - name: cache
+          image: redis:4
+          ports:
+            - containerPort: 6379
+          envFrom:
+            - configMapRef:
+                name: ctfd-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ctfd
+  labels:
+    app: ctfd
+spec:
+  selector:
+    app: ctfd
+  ports:
+   - name: http
+     port: 80
+     targetPort: 8000
+     protocol: TCP

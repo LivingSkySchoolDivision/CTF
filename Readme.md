@@ -21,27 +21,26 @@ This setup requires a kubernetes ingress controller to exist on your kubernetes 
 Your user must have access to `kubectl` and `docker` commands on the server. Docker access through `sudo` is fine, as long as you have the ability to run Docker commands.
 
 ## Set up Scoreboard
-We're using **RootTheBox** for a scoreboard, which is a bit of a challenge to set up in Kubernetes.
-https://github.com/moloch--/RootTheBox
+We're using **CTFd** for a scoreboard: https://github.com/CTFd/CTFd / https://ctfd.io/
 
-### Create a RootTheBox docker image
+### Create a CTFd docker image
 ```
-git clone https://github.com/moloch--/RootTheBox
-cd RootTheBox
-sudo docker build -t rootthebox:latest .
+git clone https://github.com/CTFd/CTFd
+cd CTFd
+sudo docker build -t ctfd:latest .
 ```
 
-The tag of this docker image must match the image name in /scoreboard/kube-deployment/rootthebox.yml.
+The tag of this docker image must match the image name in /scoreboard/CTFd/ctfd.yml.
 
 
 ### Create a kubernetes deployment
-Edit /scoreboard/kube-deployment/rootthebox.yml with the appropriate domain name (which you should point at your kubernetes server).
+Edit /scoreboard/CTFd/ctfd.yml with the appropriate domain name (which you should point at your kubernetes server).
 
 Also edit the ConfigMap section with any settings you'd like to apply. 
-Help with configuration options can be found here: https://github.com/moloch--/RootTheBox/wiki/Configuration-File-Details
 
+Deploy it to Kubernetes:
 ```
-kubectl apply -f rootthebox.yml
+kubectl apply -f ctfd.yml
 ```
 
 This configuration does not save anything outside of the container, so if your container restarts, all progress and data will be lost. Setting up a volume in kubernetes can get a bit complicated, and is beyond the scope of this readme file.
@@ -106,11 +105,8 @@ Follow the prompts.
 
 The script reads the challenges from your JuiceShop server, so don't give it a Multi-Juicer url, or the script will fail. Use the default (https://juice-shop.herokuapp.com), or point it to a standalone instance of Juice Shop somewhere else. The important thing here is that your ctfKey matches the one in your config file.
 
-Retrieve the file that this script makes, and import it into RootTheBox.
-https://pwning.owasp-juice.shop/part1/ctf.html#running-rootthebox
+Retrieve the file that this script makes, and import it into the scoreboard:
+ - Instructions for CTFd: https://pwning.owasp-juice.shop/part1/ctf.html#running-ctfd
+ - Instructions for RootTheBox: https://pwning.owasp-juice.shop/part1/ctf.html#running-rootthebox
 
 **THIS FILE CONTAINS THE FLAGS IN PLAINTEXT SO BE CAREFUL WHERE YOU STORE IT.**
-
-## Change the admin password on the scoreboard server
-
-By default, the admin credentials are `admin/rootthebox`. You'll want to change this to something unique.
