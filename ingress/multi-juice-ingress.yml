@@ -1,0 +1,45 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: juice-loosener
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/frontend-entry-points: "http,https"
+    traefik.ingress.kubernetes.io/preserve-host: "true"
+spec:
+  tls:
+  - hosts:
+    - juicebox.lskysd.ca
+    - juiceshop.lskysd.ca
+  rules:
+  - host: juicebox.lskysd.ca
+    http:
+      paths:
+      - backend:
+          serviceName: juice-loosener
+          servicePort: 80
+  - host: juiceshop.lskysd.ca
+    http:
+      paths:
+      - backend:
+          serviceName: juice-loosener
+          servicePort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: juice-loosener
+  labels:
+    app: juice-loosener
+spec:
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  selector:
+    app.kubernetes.io/name: multi-juicer
+  ports:
+   - name: http
+     port: 80
+     targetPort: 3000
+     protocol: TCP

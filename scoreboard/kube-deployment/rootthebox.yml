@@ -70,7 +70,8 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: docker-registry.lskysd.ca/ctf/rootthebox:latest
+          image: rootthebox:latest
+          imagePullPolicy: Never # get the one built on the kubernetes server itself
           ports:
             - containerPort: 8888
           envFrom:
