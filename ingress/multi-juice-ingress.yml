@@ -9,16 +9,9 @@ metadata:
 spec:
   tls:
   - hosts:
-    - juicebox.lskysd.ca
-    - juiceshop.lskysd.ca
+    - juice.lskysd.ca
   rules:
-  - host: juicebox.lskysd.ca
-    http:
-      paths:
-      - backend:
-          serviceName: juice-loosener
-          servicePort: 80
-  - host: juiceshop.lskysd.ca
+  - host: juice.lskysd.ca
     http:
       paths:
       - backend:

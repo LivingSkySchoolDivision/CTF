@@ -8,9 +8,9 @@ metadata:
 spec:
   tls:
   - hosts:
-    - juiceshop-scoreboard.lskysd.ca
+    - ctf.lskysd.ca
   rules:
-  - host: juiceshop-scoreboard.lskysd.ca
+  - host: ctf.lskysd.ca
     http:
       paths:
       - backend:
