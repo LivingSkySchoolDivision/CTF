@@ -2,7 +2,7 @@
 
  - **Multi-Juicer** (https://github.com/iteratec/multi-juicer)
    - Multi-user OWASP Juice Shop (https://github.com/bkimminich/juice-shop)
- - **RootTheBox** for scoreboard
+ - **CTFd** for scoreboard (https://github.com/CTFd/CTFd)
 
 # Installing
 
