@@ -1,21 +1,21 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ctfd-ingress
-  annotations:
-    kubernetes.io/ingress.class: traefik
-    traefik.ingress.kubernetes.io/frontend-entry-points: "http,https"
+  name: ctfd
+  labels:
+    app: ctfd
 spec:
-  tls:
-  - hosts:
-    - ctf.lskysd.ca
   rules:
-  - host: ctf.lskysd.ca
+  - host: "ctf.lskysd.ca"
     http:
       paths:
-      - backend:
-          serviceName: ctfd
-          servicePort: 80
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: ctfd
+              port:
+                number: 80
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -59,22 +59,21 @@ spec:
     spec:
       containers:
         - name: ctfd
-          image: ctfd:latest
-          imagePullPolicy: Never # get the one built on the kubernetes server itself
+          image: ctfd/ctfd:latest
           ports:
             - containerPort: 8000
           envFrom:
             - configMapRef:
                 name: ctfd-config
         - name: db
-          image: mariadb:10.4.12
+          image: mariadb:latest
           ports:
             - containerPort: 3306
           envFrom:
             - configMapRef:
                 name: ctfd-config
         - name: cache
-          image: redis:4
+          image: redis:latest
           ports:
             - containerPort: 6379
           envFrom:
